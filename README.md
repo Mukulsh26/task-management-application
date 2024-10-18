@@ -1,5 +1,7 @@
 # Task Manager App  
 
+#Deployed link - https://josh-talks-task-management-application.vercel.app/
+
 ## Features  
 - Add, Edit, Delete, and Mark Tasks as Completed  
 - Sort Tasks by Priority (High, Medium, Low)  
