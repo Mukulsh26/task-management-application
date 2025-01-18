@@ -1,6 +1,6 @@
 # Task Manager App  
 
-#Deployed link - https://josh-talks-task-management-application.vercel.app/
+#Deployed link - https://task-management-application-mukulsh26s-projects.vercel.app/
 
 ## Features  
 - Add, Edit, Delete, and Mark Tasks as Completed  
