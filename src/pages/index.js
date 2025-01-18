@@ -1,27 +1,38 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import TaskForm from '../components/TaskForm';
 import TaskList from '../components/TaskList';
+import { useRouter } from 'next/router';
 
 export default function Home({ initialTasks }) {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredTasks, setFilteredTasks] = useState(initialTasks);
+  const [filteredTasks, setFilteredTasks] = useState([]);
   const [editTask, setEditTask] = useState(null);
+  const router = useRouter();
 
-  // Load tasks from localStorage on mount
+  
   useEffect(() => {
     const savedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
-    const tasksToUse = savedTasks.length ? savedTasks : initialTasks;
-    setTasks(tasksToUse);
-    setFilteredTasks(tasksToUse);
-  }, []);
+    if (savedTasks.length === 0) {
+      
+      localStorage.setItem('tasks', JSON.stringify(initialTasks));
+      setTasks(initialTasks);
+      setFilteredTasks(initialTasks);
+    } else {
+      
+      setTasks(savedTasks);
+      setFilteredTasks(savedTasks);
+    }
+  }, [initialTasks]); 
 
-  // Save tasks to localStorage on every update
+  
   useEffect(() => {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
+    if (tasks.length > 0) {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
   }, [tasks]);
 
-  //Search filter function
+  
   useEffect(() => {
     const results = tasks.filter((task) =>
       task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -32,30 +43,34 @@ export default function Home({ initialTasks }) {
 
   const addTask = (newTask) => {
     const updatedTasks = [...tasks, newTask];
-    setTasks(updatedTasks);
-    setFilteredTasks(updatedTasks);
+    setTasks(updatedTasks);  
+    localStorage.setItem('tasks', JSON.stringify(updatedTasks));  
   };
 
   const updateTask = (updatedTask) => {
     const updatedTasks = tasks.map((task) =>
       task.id === updatedTask.id ? updatedTask : task
     );
-    setTasks(updatedTasks);
-    setFilteredTasks(updatedTasks);
+    setTasks(updatedTasks);  
+    localStorage.setItem('tasks', JSON.stringify(updatedTasks));  
   };
 
   const deleteTask = (id) => {
     const updatedTasks = tasks.filter((task) => task.id !== id);
-    setTasks(updatedTasks);
-    setFilteredTasks(updatedTasks);
+    setTasks(updatedTasks);  
+    localStorage.setItem('tasks', JSON.stringify(updatedTasks));  
   };
 
   const toggleCompletion = (id) => {
     const updatedTasks = tasks.map((task) =>
       task.id === id ? { ...task, completed: !task.completed } : task
     );
-    setTasks(updatedTasks);
-    setFilteredTasks(updatedTasks);
+    setTasks(updatedTasks);  
+    localStorage.setItem('tasks', JSON.stringify(updatedTasks));  
+  };
+
+  const viewDetails = (id) => {
+    router.push(`/task/${id}`);
   };
 
   return (
@@ -64,24 +79,26 @@ export default function Home({ initialTasks }) {
 
       <TaskForm onAdd={addTask} onUpdate={updateTask} editTask={editTask} />
       <br />
-     { tasks != 0 && ( <input
-        type="text"
-        placeholder="Search tasks..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />)}
+      {tasks.length > 0 && (
+        <input
+          type="text"
+          placeholder="Search tasks..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      )}
       <TaskList
         tasks={filteredTasks}
         onUpdate={updateTask}
         onDelete={deleteTask}
         onToggle={toggleCompletion}
         setEditTask={setEditTask}
+        onViewDetails={viewDetails}
       />
     </div>
   );
 }
 
-// Server-side rendering: Fetch initial tasks
 export async function getServerSideProps() {
   const initialTasks = [
     { id: 1, title: 'Sample Task', description: 'A sample task description.', priority: 'high', completed: false },
